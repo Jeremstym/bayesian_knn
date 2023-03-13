@@ -157,4 +157,36 @@ def metropolis_hastings(y, X, niter, method, burning=1000):
 
 # ------------- Probability of the label -------------
 
+def proba_with_params(g, x_new, y, X, beta, k):
+    dist_x_new = nplg.norm(X-x_new, axis=1)
+    knn_xnew_idx = dist_x_new.argsort()[:k+1] # takes itself into account
+    nearest_labels_to_new = y[knn_xnew_idx[1:]]
 
+    new_nearest_to_labels = []
+    for x_l, label in zip(X, y):
+        dist_x_l = nplg.norm(X-x_l, axis=1)
+        knn_xl_idx = dist_x_l.argsort()[:k+1] # takes itself into account 
+        if dist_x_l[knn_xl_idx][-1] >= nplg.norm(x_l-x_new):
+            new_nearest_to_labels.append(label)
+
+    sum1 = np.sum([1 for label in nearest_labels_to_new if label == g]
+                    + [1 for label in new_nearest_to_labels if label == g])
+    
+    normalization = np.sum([np.exp(beta/k*np.sum([1 for label in nearest_labels_to_new if label == g]))
+                    * np.exp(beta/k*np.sum([1 for label in new_nearest_to_labels if label == g]))
+                    for g in np.unique(y)])
+    
+    conditional_dens = np.exp(beta/k*sum1)/normalization
+
+    return conditional_dens
+
+def proba_class(g, x_new, y, X, param_list):
+    
+    M = len(param_list)
+    proba_sum = 0
+    for params in param_list:
+        proba_sum += proba_with_params(g, x_new, y, X, *params)
+    
+    proba_sum /= M
+
+    return proba_sum
