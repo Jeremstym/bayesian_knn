@@ -30,3 +30,5 @@ for x_l in data:
 
 np.linalg.norm(data-x, axis=1)
 
+np.unique(target)
+np.array(np.meshgrid(*[np.unique(target) for i in range(len(np.unique(target)))])).T.reshape(-1,3)
