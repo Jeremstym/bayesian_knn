@@ -10,7 +10,7 @@ from tqdm import tqdm
 tau2 = 1
 r = 5
 beta_max = 4
-max_neighbors = 40 # be sure that there are more data than max_neighbors
+max_neighbors = 80 # be sure that there are more data than max_neighbors
 
 ### Model 
 
