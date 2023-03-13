@@ -90,9 +90,9 @@ def constant_ratio_approximation_mc(y, X, beta, k, niter=100):
 def jacobian(theta):
     return np.exp(theta)/((1+np.exp(theta))**2)
 
-def uniform_k(k_old):
+def uniform_k(k_old, r=r):
     k_up = [i for i in range(k_old, k_old+r) if i <= max_neighbors]
-    k_down = [i for i in range(k_old - r, k_old) if i >= 0]
+    k_down = [i for i in range(k_old - r, k_old) if i > 0]
     k_new = nprd.choice(k_down+k_up)
 
     return k_new, len(k_down+k_up)
@@ -105,8 +105,14 @@ def acceptance_threshold(y, X, theta_new, theta_old, k_new, k_old, method):
     beta_old = beta_max*np.exp(theta_old)/(1+np.exp(theta_old))
 
     if method =='pseudo_likelihood':
-        model_conditionnal_up = pseudo_conditional(y, X, beta_new, k_new)
-        model_conditionnal_down = pseudo_conditional(y, X, beta_old, k_old)
+        model_conditionnal_up = pseudo_conditional(y, 
+                                                   X, 
+                                                   beta_new, 
+                                                   k_new)
+        model_conditionnal_down = pseudo_conditional(y, 
+                                                     X, 
+                                                     beta_old, 
+                                                     k_old)
 
     elif method == 'path_sampling':
         model_conditionnal_up = constant_ratio_approximation_mc(y, 
@@ -118,8 +124,8 @@ def acceptance_threshold(y, X, theta_new, theta_old, k_new, k_old, method):
                                                                   beta_old, 
                                                                   k_old)
     
-    prob_knew = 1/uniform_k(k_old)[1]
-    prob_kold = 1/uniform_k(k_new)[1]
+    prob_knew = 1/uniform_k(k_old, r=r)[1]
+    prob_kold = 1/uniform_k(k_new, r=r)[1]
     threshold = (model_conditionnal_up*jacobian(theta_new))*prob_kold\
                         /(model_conditionnal_down*jacobian(theta_old)*prob_knew)
 
