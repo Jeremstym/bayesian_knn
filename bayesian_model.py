@@ -20,7 +20,7 @@ def pseudo_conditional(y, X, beta, k):
         # k-nearest-neighbors of x_i
         dist_x_i = nplg.norm(X-x_i, axis=1)
         knn_xi_idx = dist_x_i.argsort()[:k+1] # takes itself into account
-        nearest_labels_to_i = y[knn_xi_idx[1:]]
+        nearest_labels_to_i = y[knn_xi_idx[1:]] # removes itself
 
         # x_l's for which x_i is one of the knn
         i_nearest_to_labels = []
@@ -49,7 +49,7 @@ def constant_ratio_approximation_mc(y, X, beta, k, mc_iter=100):
             # k-nearest-neighbors of x_i
             dist_x_i = nplg.norm(X-x_i, axis=1)
             knn_xi_idx = dist_x_i.argsort()[:k+1] # takes itself into account
-            nearest_labels_to_i = y[knn_xi_idx[1:]]
+            nearest_labels_to_i = y[knn_xi_idx[1:]] # removes itself
             sum1 += np.sum([1 for label in nearest_labels_to_i if label == y_i])/k
         return sum1
 
@@ -95,7 +95,7 @@ def z_sampling(y, X, beta_hat, k_hat, beta, k):
             # k-nearest-neighbors of x_i
             dist_x_i = nplg.norm(X-x_i, axis=1)
             knn_xi_idx = dist_x_i.argsort()[:k+1] # takes itself into account
-            nearest_labels_to_i = z[knn_xi_idx[1:]]
+            nearest_labels_to_i = z[knn_xi_idx[1:]] # removes itself
             sum1 += np.sum([1 for label in nearest_labels_to_i if label == z_i])/k
         return sum1
 
@@ -200,7 +200,7 @@ def metropolis_hastings(y, X, niter, method):
 def proba_with_params(g, x_new, y, X, beta, k):
     dist_x_new = nplg.norm(X-x_new, axis=1)
     knn_xnew_idx = dist_x_new.argsort()[:k+1] # takes itself into account
-    nearest_labels_to_new = y[knn_xnew_idx[1:]]
+    nearest_labels_to_new = y[knn_xnew_idx[1:]] # removes itself
 
     new_nearest_to_labels = []
     for x_l, label in zip(X, y):
