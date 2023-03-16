@@ -228,7 +228,6 @@ def proba_class(g, x_new, y, X, param_list):
         proba_sum += proba_with_params(g, x_new, y, X, *params)
 
     proba_sum /= M
-
     return proba_sum
 
 def sanity_check(X, y, param_list):
