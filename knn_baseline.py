@@ -8,8 +8,6 @@ from matplotlib.colors import ListedColormap
 from sklearn import neighbors, datasets
 from sklearn.inspection import DecisionBoundaryDisplay
 
-n_neighbors = 15
-
 # import some data to play with
 iris = datasets.load_iris()
 
