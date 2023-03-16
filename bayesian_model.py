@@ -14,6 +14,18 @@ max_neighbors = 80 # be sure that there are more data than max_neighbors
 # ----------------------------- Model -------------------------------------
 
 def pseudo_conditional(y, X, beta, k):
+    """Compute the pseudo-conditional to plug-in the acceptance ratio
+    of the Metropolis-Hastings algorithm
+
+    Args:
+        y (numpy.ndarray): labels 
+        X (numpy.ndarray): data features (points)
+        beta (float): temperature parameter
+        k (int): number of neighbors to take into account
+
+    Returns:
+        float: the pseudo-conditionnal value
+    """
 
     prod_dens = 1
     for x_i, label_i in zip(X, y):
@@ -43,6 +55,16 @@ def pseudo_conditional(y, X, beta, k):
     return prod_dens
 
 def constant_ratio_approximation_mc(y, X, beta, k, mc_iter=100):
+    """Estimate the normalization constant with Monte Carlo integration,
+    to plug-in the acceptance ratio of the Metropolis-Hastings algorithm
+
+    Args:
+        y (numpy.ndarray): labels
+        X (numpy.ndarray): data features
+        beta (float): temperature parameter
+        k (int): number of neighbors to take into accounty
+        mc_iter (int, optional): Number of iterations for the Monte Carlo integration. Defaults to 100.
+    """
     def summation_given_y(y):
         sum1 = 0
         for x_i, y_i in zip(X, y):
@@ -88,6 +110,18 @@ def constant_ratio_approximation_mc(y, X, beta, k, mc_iter=100):
     return density
 
 def z_sampling(y, X, beta_hat, k_hat, beta, k):
+    """Compute the value of denisty g, evaluated with a sample z
+    from the Boltzmann distribution (Gibbs sampler), to plug-in the
+    acceptance ratio of the Metropolis-Hastings algorithm
+
+    Args:
+        y (numpy.ndarray): labels
+        X (numpy.ndarray): data features
+        beta (float): temperature parameter
+        k (int): number of neighbors to take into accounty
+        k_hat (int): customed parameter for the g density
+        beta (float): customed parameter for the g density
+    """
     
     def summation_given_target(z):
         sum1 = 0
@@ -121,6 +155,21 @@ def uniform_k(k_old, r=r):
 # ------------ Metropolis-Hastings algorithm ------------------
 
 def acceptance_threshold(y, X, theta_new, theta_old, k_new, k_old, method):
+    """Define the acceptance ratio for the Metropolis-Hastings algorithm, used
+    to estimated the parameters beta and k for the Bayesian model
+
+    Args:
+        y (numpy.ndarray): labels
+        X (numpy.ndarray): data features
+        theta_new (float): current parameter (determine beta)
+        theta_old (float): proposed parameter (to validate)
+        k_new (int): proposed parameter (to validate)
+        k_old (int): current parameter
+        method (str): method used to estimated the ratio
+
+    Returns:
+        float: Acceptance ratio
+    """
 
     beta_new = beta_max*np.exp(theta_new)/(1+np.exp(theta_new))
     beta_old = beta_max*np.exp(theta_old)/(1+np.exp(theta_old))
@@ -168,6 +217,17 @@ def acceptance_threshold(y, X, theta_new, theta_old, k_new, k_old, method):
     return threshold
 
 def metropolis_hastings(y, X, niter, method):
+    """Perform the Metropolis-Halgorithm for each given method and data
+
+    Args:
+        y (numpy.ndarray): labels
+        X (numpy.ndarray): data features
+        niter (int): number of iteration for the algorithm
+        method (str): method used to estimated the ratio
+
+    Returns:
+        list: List of couple of parameters (beta, k) that have been accepted
+    """
 
 
     k_old = nprd.randint(max_neighbors+1)
@@ -198,6 +258,21 @@ def metropolis_hastings(y, X, niter, method):
 # ------------- Probability of the label -------------
 
 def proba_with_params(g, x_new, y, X, beta, k):
+    """Estimate the conditionnal probability (before integration) 
+    for a data point to belong to a class
+
+    Args:
+        g (int): potential class
+        x_new (numpy.ndarray): new data point to assign
+        y (numpy.ndarray): labels
+        X (numpy.ndarray): data features
+        beta (float): temperature parameter
+        k (int): number of neighbors to take into account
+
+    Returns:
+        float: an evaluated probability for the data point to belong to the class g
+        (conditional to the parameters)
+    """
     dist_x_new = nplg.norm(X-x_new, axis=1)
     knn_xnew_idx = dist_x_new.argsort()[:k+1] # takes itself into account
     nearest_labels_to_new = y[knn_xnew_idx[1:]] # removes itself
@@ -221,6 +296,19 @@ def proba_with_params(g, x_new, y, X, beta, k):
     return conditional_dens
 
 def proba_class(g, x_new, y, X, param_list):
+    """Estimate the full probability for a new data point to belong to a class,
+    with a summation on the parameters that have been accepted by the Metropolis-Hastings algorithm
+
+    Args:
+        g (int): potential class
+        x_new (numpy.ndarray): new data point
+        y (numpy.ndarray): labels
+        X (numpy.ndarray): data features
+        param_list (list): list of accepted parameters issued from the Metropolis-Hastings algorithm
+
+    Returns:
+        float: an evaluated probability for the data point to belong to the class g
+    """
 
     M = len(param_list)
     proba_sum = 0
@@ -231,6 +319,16 @@ def proba_class(g, x_new, y, X, param_list):
     return proba_sum
 
 def sanity_check(X, y, param_list):
+    """Compute the mean accuracy to check if the model sanity
+
+    Args:
+        X (numpy.ndarray): data features
+        y (numpy.ndarray): labels
+        param_list (list): list of accepted parameters issued from the Metropolis-Hastings algorithm
+
+    Returns:
+        NoneType: None (just print the information)
+    """
     accuracy = 0
     idx = 0
     for x_i in tqdm(X):
